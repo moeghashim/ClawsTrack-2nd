@@ -5,3 +5,11 @@
 - Learning: keep raw scraped data references (raw_payload_ref/notes_ref) separate from AI-derived analyses for auditability and prompt regression debugging.
 - Learning: enforce explainability in schema early (rationale + confidence) so comparison UX is grounded from day one.
 
+[2026-02-23 17:26:13 CST] Phase 2 started (ingestion skeleton)
+- Added workers package with Scrapling-based GitHub ingestor skeleton.
+- Added typed config parsing + MONITORED_REPOS URL validation/dedup.
+- Added normalized event models and analysis output schema (change_type, impact, confidence, rationale).
+- Added workers run entrypoint and setup docs.
+- Learning: URL validation at config boundary prevents noisy runtime failures in worker loops.
+- Learning: using typed schemas for analysis output early makes later OpenAI JSON-mode integration safer.
+
