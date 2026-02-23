@@ -24,4 +24,6 @@ python -m workers.src.main
 Expected behavior:
 - Reads `MONITORED_REPOS` from environment
 - Fetches each repository page and releases page via Scrapling
+- Normalizes release events
+- Persists ingestion artifacts into `workers/.data/*.jsonl`
 - Emits basic run summary logs

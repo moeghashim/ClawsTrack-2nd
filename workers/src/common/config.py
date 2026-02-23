@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import re
 from functools import cached_property
 from typing import List
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-GITHUB_REPO_URL_RE = re.compile(
-    r"^https?://github\.com/(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?/?$"
-)
+from workers.src.common.repo_parser import GITHUB_REPO_URL_RE
 
 
 class Settings(BaseSettings):

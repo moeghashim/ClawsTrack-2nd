@@ -13,3 +13,11 @@
 - Learning: URL validation at config boundary prevents noisy runtime failures in worker loops.
 - Learning: using typed schemas for analysis output early makes later OpenAI JSON-mode integration safer.
 
+[2026-02-23 17:33:41 CST] Phase 2.1 (parsing + persistence wiring)
+- Implemented resilient GitHub release parsing heuristics from /releases HTML via Scrapling responses.
+- Added snapshot metadata extraction (default branch, stars/forks heuristic, latest release tag).
+- Added local JSONL store adapter for repository_snapshots, release_events, normalized_events.
+- Updated ingestion entrypoint to normalize and persist artifacts per repository.
+- Learning: parser resilience on GitHub pages requires fallback heuristics because exact selectors can drift; keep parsing bounded + deduped.
+- Learning: introducing a file-backed persistence adapter early speeds iteration before full DB/ORM integration.
+
