@@ -1,0 +1,7 @@
+[2026-02-23 17:24:37 CST] Phase 1 kickoff
+- Created project module folders: backend/, workers/, frontend/, skill/, docs/, config/.
+- Added foundation docs: architecture, data model, draft SQL schema.
+- Added environment contracts: .env.example + config/env.contract.md.
+- Learning: keep raw scraped data references (raw_payload_ref/notes_ref) separate from AI-derived analyses for auditability and prompt regression debugging.
+- Learning: enforce explainability in schema early (rationale + confidence) so comparison UX is grounded from day one.
+
