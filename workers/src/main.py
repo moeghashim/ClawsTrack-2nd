@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from workers.src.analysis.comparison import build_comparison_run
 from workers.src.analysis.openai_analyzer import OpenAIAnalyzer
+from workers.src.analysis.rank_shift import detect_rank_shifts
 from workers.src.common.config import settings
 from workers.src.common.store import JsonlStore
 from workers.src.ingestion.normalize import normalize_releases
 from workers.src.ingestion.persist import persist_comparison_run, persist_repo_batch
 from workers.src.ingestion.scrapling_github import GitHubScraplingIngestor
+from workers.src.notifications import build_rank_shift_notifications
 
 
 def run_ingestion() -> None:
@@ -71,11 +73,29 @@ def run_ingestion() -> None:
             )
 
     if all_analysis_rows:
-        comparison = build_comparison_run(mode="executive", rows=all_analysis_rows)
-        file_store.append_raw("comparison_runs", comparison)
-        if use_db:
-            persist_comparison_run("executive", comparison)
-        print(f"comparison_run mode=executive repos={len(comparison['repositories'])}")
+        history = file_store.read_all("comparison_runs")
+        modes = ["executive", "technical", "security", "usecase"]
+
+        for mode in modes:
+            comparison = build_comparison_run(mode=mode, rows=all_analysis_rows)
+            previous_same_mode = next((r for r in reversed(history) if r.get("mode") == mode), None)
+
+            shifts = []
+            notifications = []
+            if previous_same_mode:
+                shifts = detect_rank_shifts(previous_same_mode.get("results", []), comparison.get("results", []), min_shift=1)
+                notifications = build_rank_shift_notifications(shifts)
+
+            comparison["rankShifts"] = shifts
+            comparison["notifications"] = notifications
+
+            file_store.append_raw("comparison_runs", comparison)
+            if use_db:
+                persist_comparison_run(mode, comparison)
+
+            print(
+                f"comparison_run mode={mode} repos={len(comparison['repositories'])} shifts={len(shifts)} notifications={len(notifications)}"
+            )
 
 
 if __name__ == "__main__":

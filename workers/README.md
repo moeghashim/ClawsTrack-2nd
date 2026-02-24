@@ -6,7 +6,8 @@ Ingestion + analysis jobs for ClawsTrack.
 - Scrapling-based GitHub ingestion
 - Event normalization layer
 - OpenAI-backed change analysis (with fallback mode)
-- Executive comparison run generation
+- Multi-mode comparison run generation (executive, technical, security, usecase)
+- Ranking shift detection + notification payload generation
 - Typed analysis output schema (explainability-first)
 
 ## Setup

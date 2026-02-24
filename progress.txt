@@ -37,3 +37,11 @@
 - Learning: always keep a deterministic fallback analyzer path so pipeline can run in dev/test without external API keys.
 - Learning: schema-validated model output should happen immediately after API response parsing to fail fast and prevent dirty writes.
 
+[2026-02-23 21:26:38 CST] Phase 3.1 (modes + confidence calibration + ranking-shift detection)
+- Added multi-mode comparison scoring: executive, technical, security, usecase.
+- Added confidence calibration by sample size to reduce overconfidence on sparse data.
+- Added rank shift detector and notification payload builder for meaningful ordering changes.
+- Updated main pipeline to produce comparison runs per mode and include shifts/notifications in outputs.
+- Learning: ranking deltas are much more useful when mode-aware (a repo can improve in security while dropping in use-case fit).
+- Learning: confidence should be calibrated as a function of sample size; raw model confidence alone is misleading early on.
+
