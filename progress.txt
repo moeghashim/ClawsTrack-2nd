@@ -29,3 +29,11 @@
 - Learning: dual-write (file artifacts + DB) gives safer debugging and replay paths during early ingestion stabilization.
 - Learning: idempotency should be explicit in both code and schema (keys + unique indexes), not one alone.
 
+[2026-02-23 19:13:03 CST] Phase 3 kickoff (analysis + comparison pipeline baseline)
+- Added OpenAI analyzer client with strict JSON response format and fallback heuristic mode.
+- Added prompt builder + typed analysis schema validation for safe output handling.
+- Added executive comparison scoring and run payload builder.
+- Updated ingestion flow to run analyses for normalized events and emit comparison runs (file + optional DB).
+- Learning: always keep a deterministic fallback analyzer path so pipeline can run in dev/test without external API keys.
+- Learning: schema-validated model output should happen immediately after API response parsing to fail fast and prevent dirty writes.
+

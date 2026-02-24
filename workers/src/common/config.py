@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(alias="OPENAI_API_KEY", default="")
     database_url: str = Field(alias="DATABASE_URL", default="")
     log_level: str = Field(alias="LOG_LEVEL", default="info")
+    openai_model: str = Field(alias="OPENAI_MODEL", default="gpt-4.1-mini")
 
     @field_validator("monitored_repos")
     @classmethod

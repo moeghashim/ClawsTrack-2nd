@@ -92,14 +92,14 @@ def upsert_release_events(
     return inserted
 
 
-def insert_normalized_events(
+def insert_change_analyses(
     conn: psycopg.Connection,
     repository_id: str,
-    events: Iterable[Dict[str, Any]],
+    analyses: Iterable[Dict[str, Any]],
 ) -> int:
     inserted = 0
     with conn.cursor() as cur:
-        for ev in events:
+        for a in analyses:
             cur.execute(
                 """
                 insert into change_analyses
@@ -108,13 +108,30 @@ def insert_normalized_events(
                 """,
                 (
                     repository_id,
-                    "other",
-                    ev.get("title", "Change detected"),
-                    "low",
-                    0.45,
-                    f"Ingestion normalized event from source {ev.get('source_url')}",
-                    "ingestion-normalizer-v0",
+                    a.get("change_type", "other"),
+                    a.get("summary", "Change detected"),
+                    a.get("impact_level", "low"),
+                    float(a.get("confidence", 0.4)),
+                    a.get("rationale", "Generated analysis"),
+                    a.get("model", "unknown"),
                 ),
             )
             inserted += cur.rowcount
     return inserted
+
+
+def insert_comparison_run(
+    conn: psycopg.Connection,
+    mode: str,
+    criteria_weights: Dict[str, Any],
+    repositories: list[str],
+    results: list[Dict[str, Any]],
+) -> None:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            insert into comparison_runs (mode, criteria_weights, repositories, results)
+            values (%s, %s::jsonb, %s::jsonb, %s::jsonb)
+            """,
+            (mode, _to_json(criteria_weights), _to_json(repositories), _to_json(results)),
+        )

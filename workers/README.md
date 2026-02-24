@@ -2,9 +2,11 @@
 
 Ingestion + analysis jobs for ClawsTrack.
 
-## Phase 2 scope
-- Scrapling-based GitHub ingestion skeleton
+## Phase 2/3 scope
+- Scrapling-based GitHub ingestion
 - Event normalization layer
+- OpenAI-backed change analysis (with fallback mode)
+- Executive comparison run generation
 - Typed analysis output schema (explainability-first)
 
 ## Setup
@@ -27,6 +29,8 @@ Expected behavior:
 - Normalizes release events
 - Persists ingestion artifacts into `workers/.data/*.jsonl`
 - If `DATABASE_URL` is set, also writes to PostgreSQL with idempotent upserts
+- Runs change analysis per normalized event (OpenAI if key present)
+- Builds an executive comparison run across analyzed repositories
 - Emits basic run summary logs
 
 ## DB bootstrap
