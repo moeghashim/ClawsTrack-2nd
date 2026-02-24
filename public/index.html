@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clawstrack 2nd</title>
+    <style>
+      :root {
+        --bg: #f5f8ff;
+        --surface: #ffffff;
+        --line: #d8e0f2;
+        --text: #13213f;
+        --muted: #5e6d8b;
+        --accent: #0b6cff;
+        --good: #0f9d58;
+        --warn: #d57c00;
+        --bad: #db4437;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif;
+        background: radial-gradient(circle at top right, #e9efff, var(--bg));
+        color: var(--text);
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1, h2, h3 { margin: 0.2rem 0; }
+      section {
+        margin-bottom: 20px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 14px 26px rgba(31, 53, 119, 0.05);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 16px;
+      }
+
+      .card {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      .span-6 { grid-column: span 6; }
+      .span-4 { grid-column: span 4; }
+      .span-12 { grid-column: span 12; }
+
+      .muted { color: var(--muted); font-size: 0.9rem; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .repo-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }
+
+      input, button, select {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font: inherit;
+      }
+
+      button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+
+      .chip {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #edf2ff;
+        font-size: 0.8rem;
+        margin-right: 6px;
+      }
+
+      .repo-item { padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
+      .repo-item h3 { margin-bottom: 4px; }
+      .repo-item .high { color: var(--bad); }
+      .repo-item .mid { color: var(--warn); }
+      .repo-item .low { color: var(--good); }
+      pre { white-space: pre-wrap; background: #f4f7ff; padding: 10px; border-radius: 8px; }
+      .small { font-size: 0.85rem; }
+
+      @media (max-width: 900px) {
+        .repo-list { grid-template-columns: 1fr; }
+        .span-6, .span-4, .span-12 { grid-column: span 12; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Clawstrack 2nd</h1>
+      <p class="muted">Monitor tracked repositories and compare OSS projects by explainable criteria.</p>
+
+      <section>
+        <h2>Authentication</h2>
+        <div class="row">
+          <div class="card">
+            <div class="small">Sign up</div>
+            <form id="register-form" class="row">
+              <input id="register-name" placeholder="name" />
+              <input id="register-email" type="email" placeholder="email" required />
+              <input id="register-password" type="password" placeholder="password" required />
+              <button type="submit">Register</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="small">Login</div>
+            <form id="login-form" class="row">
+              <input id="login-email" type="email" placeholder="email" required />
+              <input id="login-password" type="password" placeholder="password" required />
+              <button type="submit">Login</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="small">Session</div>
+            <div id="session-status">Not signed in.</div>
+            <button id="logout-btn">Logout</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="row" style="justify-content: space-between;">
+          <h2>Monitored repos</h2>
+          <div class="row">
+            <input id="admin-key" placeholder="Admin key" />
+            <button id="refresh-btn">Refresh</button>
+            <button id="run-ingest-btn">Run ingest now</button>
+          </div>
+        </div>
+        <div id="repos-container" class="repo-list"></div>
+      </section>
+
+      <section>
+        <div class="grid">
+          <div class="span-12">
+            <h2>Compare repositories</h2>
+            <div class="row" style="align-items: flex-start;">
+              <form id="compare-form" class="row" style="flex-wrap: wrap;">
+                <div id="compare-selection" class="row" style="min-width: 280px;"></div>
+                <select id="compare-mode">
+                  <option value="executive">Executive</option>
+                  <option value="technical">Technical depth</option>
+                  <option value="security">Security</option>
+                  <option value="use_case">Use-case fit</option>
+                </select>
+                <button type="submit">Compare</button>
+              </form>
+            </div>
+            <pre id="compare-result">Select two repos and click Compare.</pre>
+          </div>
+          <div class="span-6">
+            <h3>Subscriptions</h3>
+            <form id="subscription-form" class="row">
+              <select id="sub-repo"></select>
+              <label><input id="sub-all" type="checkbox" checked /> All</label>
+              <label><input id="sub-security" type="checkbox" /> Security</label>
+              <label><input id="sub-feature" type="checkbox" /> Feature</label>
+              <button type="submit">Save subscription</button>
+            </form>
+            <div id="sub-list"></div>
+          </div>
+          <div class="span-6">
+            <h3>Notifications</h3>
+            <div id="notifications"></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Repository timelines</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Repository</th>
+              <th>Latest release</th>
+              <th>Change type</th>
+              <th>Significance</th>
+              <th>Criteria snapshot</th>
+            </tr>
+          </thead>
+          <tbody id="repo-table-body">
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <script>
+      const api = {
+        token: localStorage.getItem('token') || '',
+
+        async request(path, options = {}) {
+          const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+          if (this.token) headers.Authorization = `Bearer ${this.token}`;
+
+          const response = await fetch(path, {
+            ...options,
+            headers,
+            body: options.body ? JSON.stringify(options.body) : undefined
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || `Request failed: ${response.status}`);
+          }
+          return data;
+        },
+
+        setToken(next) {
+          this.token = next || '';
+          if (next) {
+            localStorage.setItem('token', next);
+          } else {
+            localStorage.removeItem('token');
+          }
+        }
+      };
+
+      const state = {
+        repositories: [],
+        selectedRepoIds: []
+      };
+
+      function scoreClass(significance) {
+        if (significance === 'high') return 'high';
+        if (significance === 'medium') return 'mid';
+        return 'low';
+      }
+
+      function renderRepos() {
+        const container = document.getElementById('repos-container');
+        container.innerHTML = '';
+        const compareSelection = document.getElementById('compare-selection');
+        compareSelection.innerHTML = '';
+        const tableBody = document.getElementById('repo-table-body');
+        tableBody.innerHTML = '';
+        const subSelect = document.getElementById('sub-repo');
+        subSelect.innerHTML = '';
+
+        state.repositories.forEach((repo) => {
+          const card = document.createElement('div');
+          card.className = 'repo-item';
+          const latest = repo.latestSnapshot;
+          card.innerHTML = `
+            <h3>${repo.fullName}</h3>
+            <div class="small muted">${repo.url}</div>
+            <p>${latest ? latest.summary : 'No snapshot yet.'}</p>
+            ${latest ? `<span class="chip ${scoreClass(latest.significance)}">${latest.significance || 'low'} · ${latest.changeType || ''}</span>` : ''}
+            <div><a href="${repo.url}" target="_blank">Open repo</a></div>
+          `;
+          container.appendChild(card);
+
+          const option = document.createElement('label');
+          option.className = 'chip';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = repo.id;
+          checkbox.onchange = () => {
+            const checked = [...document.querySelectorAll('#compare-selection input:checked')].map((item) => item.value);
+            state.selectedRepoIds = checked;
+          };
+          option.appendChild(checkbox);
+          option.append(` ${repo.fullName}`);
+          compareSelection.appendChild(option);
+
+          const timelineRow = document.createElement('tr');
+          timelineRow.innerHTML = `
+            <td>${repo.fullName}</td>
+            <td>${latest ? latest.title : 'n/a'}</td>
+            <td>${latest ? latest.changeType : 'n/a'}</td>
+            <td>${latest ? latest.significance : 'n/a'}</td>
+            <td><pre>${latest && latest.criteria ? JSON.stringify(latest.criteria, null, 2) : 'n/a'}</pre></td>
+          `;
+          tableBody.appendChild(timelineRow);
+
+          const subOpt = document.createElement('option');
+          subOpt.value = repo.id;
+          subOpt.textContent = repo.fullName;
+          subSelect.appendChild(subOpt);
+        });
+      }
+
+      async function renderMe() {
+        if (!api.token) {
+          document.getElementById('session-status').textContent = 'Not signed in.';
+          return;
+        }
+        try {
+          const payload = await api.request('/api/me');
+          document.getElementById('session-status').textContent = `Signed in as ${payload.user.email}`;
+        } catch (_error) {
+          api.setToken('');
+          document.getElementById('session-status').textContent = 'Session expired.';
+        }
+      }
+
+      async function loadRepos() {
+        const payload = await api.request('/api/repos');
+        state.repositories = payload.repositories || [];
+        renderRepos();
+      }
+
+      async function loadNotifications() {
+        if (!api.token) {
+          document.getElementById('notifications').textContent = 'Sign in to see notifications.';
+          return;
+        }
+        const payload = await api.request('/api/notifications');
+        const list = payload.notifications || [];
+        const container = document.getElementById('notifications');
+        if (!list.length) {
+          container.textContent = 'No notifications yet.';
+          return;
+        }
+        container.innerHTML = list
+          .map((item) => `<div class="card"><strong>${item.title}</strong><div class="muted small">${item.createdAt}</div><p>${item.body}</p></div>`)
+          .join('');
+      }
+
+      async function loadSubscriptions() {
+        if (!api.token) {
+          document.getElementById('sub-list').textContent = 'Sign in to view subscriptions.';
+          return;
+        }
+        const payload = await api.request('/api/subscriptions');
+        const list = payload.subscriptions || [];
+        document.getElementById('sub-list').innerHTML = list
+          .map((sub) => `<div class="card">${sub.repository.fullName} · ${sub.criteria.join(', ')}</div>`)
+          .join('') || 'No subscriptions.';
+      }
+
+      async function reloadAll() {
+        await loadRepos();
+        await renderMe();
+        await loadNotifications();
+        await loadSubscriptions();
+      }
+
+      document.getElementById('register-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const name = document.getElementById('register-name').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value;
+        const payload = await api.request('/api/users/register', {
+          method: 'POST',
+          body: { email, password, name }
+        });
+        api.setToken(payload.token);
+        await reloadAll();
+      });
+
+      document.getElementById('login-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const payload = await api.request('/api/users/login', {
+          method: 'POST',
+          body: { email, password }
+        });
+        api.setToken(payload.token);
+        await reloadAll();
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        api.setToken('');
+        renderMe();
+        loadNotifications();
+        loadSubscriptions();
+      });
+
+      document.getElementById('refresh-btn').addEventListener('click', async () => {
+        await reloadAll();
+      });
+
+      document.getElementById('run-ingest-btn').addEventListener('click', async () => {
+        const adminKey = document.getElementById('admin-key').value.trim();
+        await fetch('/api/admin/ingest', {
+          method: 'POST',
+          headers: adminKey ? { 'x-admin-key': adminKey } : {}
+        });
+        await reloadAll();
+      });
+
+      document.getElementById('compare-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const mode = document.getElementById('compare-mode').value;
+        const checked = [...document.querySelectorAll('#compare-selection input:checked')].map((item) => item.value);
+
+        if (checked.length < 2) {
+          document.getElementById('compare-result').textContent = 'Select at least two repositories.';
+          return;
+        }
+
+        try {
+          const payload = await api.request('/api/compare', {
+            method: 'POST',
+            body: { repositoryIds: checked, mode }
+          });
+          document.getElementById('compare-result').textContent = JSON.stringify(payload.result, null, 2);
+        } catch (error) {
+          document.getElementById('compare-result').textContent = error.message;
+        }
+      });
+
+      document.getElementById('subscription-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!api.token) {
+          document.getElementById('sub-list').textContent = 'Sign in first to set subscriptions.';
+          return;
+        }
+
+        const repositoryId = document.getElementById('sub-repo').value;
+        const criteria = [];
+        if (document.getElementById('sub-all').checked) criteria.push('all');
+        if (document.getElementById('sub-security').checked) criteria.push('security');
+        if (document.getElementById('sub-feature').checked) criteria.push('feature');
+
+        await api.request('/api/subscriptions', {
+          method: 'POST',
+          body: { repositoryId, criteria }
+        });
+        await loadSubscriptions();
+      });
+
+      reloadAll();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "clawstrack-2nd",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source project monitor and comparison platform",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "ingest": "node src/worker.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
