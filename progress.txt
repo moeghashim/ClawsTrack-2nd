@@ -21,3 +21,11 @@
 - Learning: parser resilience on GitHub pages requires fallback heuristics because exact selectors can drift; keep parsing bounded + deduped.
 - Learning: introducing a file-backed persistence adapter early speeds iteration before full DB/ORM integration.
 
+[2026-02-23 18:06:42 CST] Phase 2.2 (DB persistence + idempotency baseline)
+- Added PostgreSQL persistence module with repository upsert + release/snapshot writes.
+- Added idempotency helper (SHA256 dedupe keys) and ingestion persist orchestrator.
+- Updated worker main flow: always write JSONL artifacts + optionally persist to DB when DATABASE_URL exists.
+- Added schema unique indexes for snapshot and release de-dup behavior.
+- Learning: dual-write (file artifacts + DB) gives safer debugging and replay paths during early ingestion stabilization.
+- Learning: idempotency should be explicit in both code and schema (keys + unique indexes), not one alone.
+

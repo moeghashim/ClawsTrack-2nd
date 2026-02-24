@@ -24,6 +24,9 @@ create table if not exists repository_snapshots (
   raw_payload_ref text
 );
 
+create unique index if not exists ux_repository_snapshots_repo_capture
+  on repository_snapshots(repository_id, captured_at);
+
 create table if not exists release_events (
   id uuid primary key default gen_random_uuid(),
   repository_id uuid not null references repositories(id) on delete cascade,
@@ -34,6 +37,9 @@ create table if not exists release_events (
   source_url text,
   is_security_relevant boolean not null default false
 );
+
+create unique index if not exists ux_release_events_repo_source
+  on release_events(repository_id, source_url);
 
 create table if not exists change_analyses (
   id uuid primary key default gen_random_uuid(),

@@ -26,4 +26,8 @@ Expected behavior:
 - Fetches each repository page and releases page via Scrapling
 - Normalizes release events
 - Persists ingestion artifacts into `workers/.data/*.jsonl`
+- If `DATABASE_URL` is set, also writes to PostgreSQL with idempotent upserts
 - Emits basic run summary logs
+
+## DB bootstrap
+Apply SQL in `docs/schema.sql` before enabling DB persistence.
